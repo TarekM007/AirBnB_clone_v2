@@ -3,9 +3,9 @@
 from os import getenv
 from models.base_model import BaseModel, Base
 from models.city import City
-from sqlalchemy import Column, String
-import models
+from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
+import models
 
 
 class State(BaseModel, Base):
@@ -20,8 +20,8 @@ class State(BaseModel, Base):
         def cities(self):
             """ returns list of City instances related to state """
             from models import storage
-            list_of_cities = []
+            list_cities = []
             for city in storage.all(City).values():
                 if city.state_id == self.id:
-                    list_of_cities.append(city)
-            return list_of_cities
+                    list_cities.append(city)
+            return list_cities
