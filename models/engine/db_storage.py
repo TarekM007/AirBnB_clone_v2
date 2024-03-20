@@ -1,8 +1,5 @@
 #!/usr/bin/python3
-"""This module defines a class to manage db storage for hbnb clone"""
-from os import getenv
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.orm import sessionmaker, scoped_session
+""" file storage class for AirBnB """
 import models
 from models.base_model import Base
 from models.base_model import BaseModel
@@ -12,6 +9,9 @@ from models.place import Place
 from models.review import Review
 from models.state import State
 from models.user import User
+from os import getenv
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 class DBStorage:
@@ -20,40 +20,40 @@ class DBStorage:
     __session = None
 
     def __init__(self):
-        """Create engine and connect to database"""
-        user = getenv("HBNB_MYSQL_USER")
-        pwd = getenv("HBNB_MYSQL_PWD")
-        host = getenv("HBNB_MYSQL_HOST")
-        db = getenv("HBNB_MYSQL_DB")
-        envv = getenv("HBNB_ENV", "none")
+        """Creates engine"""
+        SQL_user = getenv("HBNB_MYSQL_USER")
+        SQL_pwd = getenv("HBNB_MYSQL_PWD")
+        SQL_host = getenv("HBNB_MYSQL_HOST")
+        SQL_db = getenv("HBNB_MYSQL_DB")
+        SQL_envv = getenv("HBNB_ENV", "none")
 
-        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.format(
-            user, pwd, host, db), pool_pre_ping=True)
+        self.__engine = create_engine(f"mysql+mysqldb://{SQL_user}:{SQL_pwd}@{SQL_host}/{SQL_db}"
+            , pool_pre_ping = True)
 
-        if envv == 'test':
+        if SQL_envv == "test":
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        """returns a dictionary
-        Return:
-            returns a dictionary of __object
-        """
+        """Query on the current database session (self.__session)"""
+
         dic = {}
-        if cls:
-            if type(cls) is str:
-                cls = eval(cls)
-            query = self.__session.query(cls)
+        if not cls:
+            class_table = [User, State, City, Amenity, Place, Review]
+
+        else:
+            if type(cls) == str:
+                cls = eval(csl)
+
+            class_table = [cls]
+
+        for item in class_table:
+            query = self.__session.query(item).all()
+
             for elem in query:
                 key = "{}.{}".format(type(elem).__name__, elem.id)
                 dic[key] = elem
-        else:
-            lista = [State, City, User, Place, Review, Amenity]
-            for clase in lista:
-                query = self.__session.query(clase)
-                for elem in query:
-                    key = "{}.{}".format(type(elem).__name__, elem.id)
-                    dic[key] = elem
-        return (dic)
+
+        return dic
 
     def new(self, obj):
         """add the object to the current database session"""
@@ -69,13 +69,8 @@ class DBStorage:
             self.__session.delete(obj)
 
     def reload(self):
-        """Create current database session from the engine
-        using a sessionmaker"""
+        """Create all tables in the database (feature of SQLAlchemy)"""
         self.__session = Base.metadata.create_all(self.__engine)
-        factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(factory)
+        session_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        Session = scoped_session(session_factory)
         self.__session = Session()
-
-    def close(self):
-        """Remove session"""
-        self.__session.close()
