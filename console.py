@@ -11,7 +11,6 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
-from sqlalchemy import Column, String
 
 
 class HBNBCommand(cmd.Cmd):
@@ -118,8 +117,8 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, args):
         """ Create an object of any class"""
         pattern = """(^\w+)((?:\s+\w+=[^\s]+)+)?"""
-        m = re.match(pattern, args)
-        args = [s for s in m.groups() if s] if m else []
+        matched = re.match(pattern, args)
+        args = [s for s in matched.groups() if s] if matched else []
 
         if not args:
             print("** class name missing **")
