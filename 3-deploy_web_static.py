@@ -6,7 +6,7 @@ import os
 do_pack = __import__('1-pack_web_static').do_pack
 # do_deploy = __import__('2-do_deploy_web_static').do_deploy
 
-env.hosts = ['3.235.198.120', '3.239.50.204']
+env.hosts = ['3.90.83.101', '100.26.240.229']
 
 
 def deploy():
