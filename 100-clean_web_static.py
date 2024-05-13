@@ -1,43 +1,29 @@
 #!/usr/bin/python3
-"""Clean all archives based on the number of
-arguements passed"""
-
-from operator import length_hint
-from fabric.api import run, local, cd, env
 import os
+from fabric.api import *
 
-# env.hosts = ['3.90.83.101', '100.26.240.229']
+env.hosts = ['3.90.83.101', '100.26.240.229']
 
 
 def do_clean(number=0):
-    """Cleans all .tgz files"""
-    """if os.path.exists('versions'):
-        # with cd('versions'):
-        # local('find ')
-        path = 'versions'
-        files = [file for file in os.listdir(
-            path) if 'web' in file and '.tgz' in file]
+    """Delete out-of-date archives.
 
-        print(files)
+    Args:
+        number (int): The number of archives to keep.
 
-        length = len(files)
-        if int(number) > length:
-            exit
-        if int(number) == 0 or int(number) == 1:
-            last = 1
-        else:
-            last = int(number)
+    If number is 0 or 1, keeps only the most recent archive. If
+    number is 2, keeps the most and second-most recent archives,
+    etc.
+    """
+    number = 1 if int(number) == 0 else int(number)
 
-        if files:
-            for index in range(length - last):
-              local('rm versions/{}'.format(files[index]))"""
+    archives = sorted(os.listdir("versions"))
+    [archives.pop() for i in range(number)]
+    with lcd("versions"):
+        [local("rm ./{}".format(a)) for a in archives]
 
-    number = int(number)
-    if number == 0:
-        number = 2
-    else:
-        number += 1
-
-    local('cd versions ; ls -t | tail -n +{} | xargs rm -rf'.format(number))
-    path = '/data/web_static/releases'
-    run('cd {} ; ls -t | tail -n +{} | xargs rm -rf'.format(path, number))
+    with cd("/data/web_static/releases"):
+        archives = run("ls -tr").split()
+        archives = [a for a in archives if "web_static_" in a]
+        [archives.pop() for i in range(number)]
+        [run("rm -rf ./{}".format(a)) for a in archives]
