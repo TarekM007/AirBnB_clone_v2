@@ -27,8 +27,8 @@ class DBStorage:
         SQL_db = getenv("HBNB_MYSQL_DB")
         SQL_envv = getenv("HBNB_ENV", "none")
 
-        self.__engine = create_engine(f"mysql+mysqldb://{SQL_user}:{SQL_pwd}@{SQL_host}/{SQL_db}"
-            , pool_pre_ping = True)
+        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'.format(
+            SQL_user, SQL_pwd, SQL_host, SQL_db), pool_pre_ping=True)
 
         if SQL_envv == "test":
             Base.metadata.drop_all(self.__engine)
@@ -71,8 +71,8 @@ class DBStorage:
     def reload(self):
         """Create all tables in the database (feature of SQLAlchemy)"""
         self.__session = Base.metadata.create_all(self.__engine)
-        session_factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
-        Session = scoped_session(session_factory)
+        factory = sessionmaker(bind=self.__engine, expire_on_commit=False)
+        Session = scoped_session(factory)
         self.__session = Session()
 
     def close(self):
